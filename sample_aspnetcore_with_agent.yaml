@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: net-razor31-sample
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dotnet-razor31-sample
+  template:
+    metadata:
+      labels:
+        app: dotnet-razor31-sample
+    spec:
+      containers:
+      - name: dotnet-razor31-sample
+        image: ariestest.azurecr.io/dotnet_razor31_sample
+        ports:
+        - containerPort: 80
+        env:
+        - name: CORECLR_ENABLE_PROFILING
+          value: "1"
+        - name: CORECLR_PROFILER
+          value: "{6C7CAF0F-D0E5-4274-A71B-6551761BBDC8}"
+        - name: CORECLR_PROFILER_PATH
+          value: "/netagent/extracted/bin/libAriesProfiler.so"
+        - name: ARIES_SERVER_ADDRESS
+          value: "127.0.0.1"
+        - name: ARIES_SERVER_PORT
+          value: "5000"
+        - name: ARIES_DOMAIN_ID
+          value: "1000"
+        volumeMounts:
+        - mountPath: "/netagent"
+          name: volume
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: jennifer5-agent-file
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dotnet-razor31-sample
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 13502
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: dotnet-razor31-sample
